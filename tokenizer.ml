@@ -7,14 +7,17 @@ type token =
   | NUMBER of string
   | COMPARISON_OP of string
   | STRING of string
+  | STR_FUNC of string
   | PAREN of char
   | ERROR_1 of string
   | ERROR of char
   | COMMA 
 
-let is_letter c = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c = '`' || c = '&' || c = '|' || c = '_' || c = '\'' || (c >= '0' && c <= '9');;
+let is_letter c = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c = '`' || c = '&' || c = '|' || c = '_' || c = '\'' || c ='.' || (c >= '0' && c <= '9');;
 
 let is_digit c = c >= '0' && c <= '9' ;;
+
+let is_string_function c = (c = "String.empty") || (c = "String.sub") || (c = "String.length") || (c = "String.compare") || (c = "String.split_on_char") || (c = "String.trim") || (c = "String.index") ;;
 
 let is_bool c = (c = "true") || (c = "false") ;;
 
@@ -102,6 +105,8 @@ let rec tokenize input =
       IDENTIFIER word :: tokenize rest
     else if is_num word then
       NUMBER word :: tokenize rest
+    else if is_string_function word then
+      STR_FUNC word :: tokenize rest
     else 
       ERROR_1 word :: tokenize rest
   (* | c :: cs when is_digit c ->
@@ -147,7 +152,7 @@ let print_token = function
       | "-" -> Printf.printf "'%s': arithmetic operator (SUB) \n" op
       | "*" -> Printf.printf "'%s': arithmetic operator (MUL) \n" op
       | "/" -> Printf.printf "'%s': arithmetic operator (DIV) \n" op
-      | "^" -> Printf.printf "'%s': arithmetic operator (POW) \n" op
+      | "^" -> Printf.printf "'%s': string operation (Concatenation) \n" op
       | r -> Printf.printf "'%s': Error- Invalid Token! \n" r
     end
   | NUMBER n -> Printf.printf "'%s': constant \n" n
@@ -159,6 +164,7 @@ let print_token = function
       | _ -> Printf.printf "'%s': string constant \n" s
 
     end
+  | STR_FUNC s -> Printf.printf "'%s': string operation \n" s
   | PAREN c -> Printf.printf "'%c': parenthesis \n" c
   | COMMA -> Printf.printf "',': comma \n"
   | ERROR_1 r -> Printf.printf "'%s': Error- Invalid Token! \n" r
@@ -394,6 +400,29 @@ STRINGS
  mark is not actually present in input, i have to put it 
 because ocaml doesnt allow unterminated string literals in comments)   
 Error- Unterminated String! 
+
+4. Enter the expression you want to tokenize : let trimmed_string = String.trim input_string
+'let': keyword 
+'trimmed_string': identifier 
+'=': comparison operator 
+'String.trim': string operation 
+'input_string': identifier 
+
+5. Enter the expression you want to tokenize : let index = String.index input_string char_to_find
+'let': keyword 
+'index': identifier 
+'=': comparison operator 
+'String.index': string operation 
+'input_string': identifier 
+'char_to_find': identifier 
+
+6. Enter the expression you want to tokenize : let concatenated_string = str1 ^ str2
+'let': keyword 
+'concatenated_string': identifier 
+'=': comparison operator 
+'str1': identifier 
+'^': string operation (Concatenation) 
+'str2': identifier 
 
 
 COMMAS AND PARENTHESIS
