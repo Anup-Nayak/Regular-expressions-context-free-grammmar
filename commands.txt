@@ -1,0 +1,5 @@
+ocamlopt -o test test.ml
+./test
+
+eval $(opam env)
+utop
