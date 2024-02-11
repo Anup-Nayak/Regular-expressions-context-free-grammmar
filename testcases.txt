@@ -43,8 +43,8 @@ Boolean(true)
 
 
 
-Test case: x' + y_2 - 10 >= 20
-Identifier(x')
+Test case: x` + y_2 - 10 >= 20
+Identifier(x`)
 ArithmeticOp(+)
 Identifier(y_2)
 ArithmeticOp(-)
@@ -80,14 +80,14 @@ Integer(0)
 
 
 
-Test case: if x1 + 49842 * (y2'__ - 3) = true then "result" else x1, let x2 = "hello" = "world"  && false 
+Test case: if x1 + 49842 * (y2`__ - 3) = true then "result" else x1, let x2 = "hello" = "world"  && false 
 Keyword(if)
 Identifier(x1)
 ArithmeticOp(+)
 Integer(49842)
 ArithmeticOp(*)
 Parenthesis(()
-Identifier(y2'__)
+Identifier(y2`__)
 ArithmeticOp(-)
 Integer(3)
 Parenthesis())
@@ -111,13 +111,13 @@ Boolean(false)
 
 
 
-Test case: x1 + 42 * (y'2'_ - 3 ) = (true && false) || pair
+Test case: x1 + 42 * (y`2`_ - 3 ) = (true && false) || pair
 Identifier(x1)
 ArithmeticOp(+)
 Integer(42)
 ArithmeticOp(*)
 Parenthesis(()
-Identifier(y'2'_)
+Identifier(y`2`_)
 ArithmeticOp(-)
 Integer(3)
 Parenthesis())
