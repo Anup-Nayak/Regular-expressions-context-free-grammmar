@@ -7,21 +7,23 @@ type token =
   | COMPARISON_OP of string
   | STRING_CONST of string
   | PAREN of char
-  | COMMA
+  | COMMA ;;
 
-let is_letter c = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
+let is_letter c = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ;;
 
-let is_digit c = c >= '0' && c <= '9'
+let is_digit c = c >= '0' && c <= '9' ;;
+
+let is_bool c = (c = "true") || (c = "false") ;;
 
 let starts_with_char_or_underscore s =
   match String.length s with
   | 0 -> false
   | _ -> 
     let first_char = String.get s 0 in
-    first_char = '_' || (first_char >= 'a' && first_char <= 'z')
+    first_char = '_' || (first_char >= 'a' && first_char <= 'z') ;;
 
 
-let is_valid_identifier s =
+let is_identifier s =
   let rec is_valid_char = function
     | c when (c >= 'a' && c <= 'z') || (c>='A' && c<= 'Z') || (c >= '0' && c <= '9') || c = '\'' || c = '_' -> true
     | _ -> false
@@ -30,8 +32,12 @@ let is_valid_identifier s =
     | [] -> true
     | c :: cs -> is_valid_char c && check_chars cs
   in
-  starts_with_char_or_underscore s && check_chars (List.of_seq (String.to_seq s))
+  starts_with_char_or_underscore s && check_chars (List.of_seq (String.to_seq s)) ;;
 
+
+let is_keyword = function
+| "if" | "else" | "then" | "pair" | "fst" | "snd" | "and" | "or" -> true
+| _ -> false ;;
 
 (* correct this , traverse the string and find out if it is correct identifier or no. *)
 
@@ -55,7 +61,7 @@ let rec tokenize input =
     let (identifier, rest) = consume_identifier (Char.escaped c) cs in
     if identifier = "true" || identifier = "false" then
       BOOLEAN (identifier = "true") :: tokenize rest
-    else if identifier = "if" || identifier = "then" || identifier = "else" then
+    else if identifier = "if" || identifier = "then" || identifier = "else" || identifier = "pair" || identifier = "fst" || identifier = "snd" || identifier = "or" || identifier = "and" then
       KEYWORD identifier :: tokenize rest
     else
       IDENTIFIER identifier :: tokenize rest
@@ -92,21 +98,31 @@ let tokenize_input input =
 (* correct this so that arithmetic operations dont show plus *)
 
 let print_token = function
-  | IDENTIFIER s -> Printf.printf "'%s': identifier " s
-  | KEYWORD s -> Printf.printf "'%s': keyword " s
-  | BOOLEAN b -> Printf.printf "'%b': boolean " b
-  | ARITH_OP op -> Printf.printf "'%s': arithmetic operator (PLUS) " op
-  | INT_CONST n -> Printf.printf "'%d': constant " n
-  | COMPARISON_OP op -> Printf.printf "'%s': comparison operator " op
-  | STRING_CONST s -> Printf.printf "'%s': string constant " s
-  | PAREN c -> Printf.printf "'%c': parenthesis " c
-  | COMMA -> Printf.printf "',': comma ";;
+  | IDENTIFIER s -> Printf.printf "'%s': identifier \n" s
+  | KEYWORD s -> Printf.printf "'%s': keyword \n" s
+  | BOOLEAN b -> Printf.printf "'%b': boolean \n" b
+  | ARITH_OP op ->
+    begin
+      match op with
+      | "+" -> Printf.printf "'%s': arithmetic operator (PLUS) \n" op
+      | "-" -> Printf.printf "'%s': arithmetic operator (SUB) \n" op
+      | "*" -> Printf.printf "'%s': arithmetic operator (MUL) \n" op
+      | "/" -> Printf.printf "'%s': arithmetic operator (DIV) \n" op
+      | _ -> failwith "Invalid arithmetic operator"
+    end
+  | INT_CONST n -> Printf.printf "'%d': constant \n" n
+  | COMPARISON_OP op -> Printf.printf "'%s': comparison operator \n" op
+  | STRING_CONST s -> Printf.printf "'%s': string constant \n" s
+  | PAREN c -> Printf.printf "'%c': parenthesis \n" c
+  | COMMA -> Printf.printf "',': comma \n";;
 
 (* Example usage *)
-(* let input = " x*f = max ( 4 , 6 ) "
+let input = "if x1 + 42 * (y2 - 3) = true then \"result\" else x1"
 let tokens = tokenize_input input
-let () = List.iter print_token tokens;; *)
+let () = List.iter print_token tokens;;
 
-let a = is_valid_identifier "_alid_Stri'ng" (* true *);;
-Printf.printf "My boolean value is: %b\n" a;;
+(* let a = is_identifier "_alid_Stri'ng";; *)
+(* Printf.printf "My boolean value is: %b\n" a;; *)
+
+
 print_newline();;
