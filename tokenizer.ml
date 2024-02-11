@@ -4,9 +4,9 @@ type token =
   | BOOLEAN of bool
   | BOOL_OP of string
   | ARITH_OP of string
-  | INT_CONST of string
+  | NUMBER of string
   | COMPARISON_OP of string
-  | STRING_CONST of string
+  | STRING of string
   | PAREN of char
   | ERROR_1 of string
   | ERROR of char
@@ -62,7 +62,12 @@ let is_word s =
   starts_with_char_or_underscore s && check_chars (List.of_seq (String.to_seq s)) ;;
 
 let is_keyword = function
-| "if" | "else" | "then" | "pair" | "fst" | "snd" | "let" | "type" -> true
+| "if" | "else" | "then" | "pair" | "fst" | "snd" | "let" | "type"  | "and" | "as" | "assert" | "begin" |
+"class" | "constraint" | "do" | "done" | "downto" | "end" | "exception" | "external" | "false" | "for" | "fun" | "function" | "functor"  |
+"in" | "include" | "inherit" | "initializer" | "lazy"  | "match" | "method" | "module" |
+"mutable" | "new" | "nonrec" | "object" | "of" | "open" | "or" | "private" | "rec" | "sig" |
+"struct"  | "to" | "true" | "try"  | "val" | "virtual" | "when" | "while" | "with"
+ -> true
 | _ -> false ;;
 
 let rec is_char = function
@@ -96,12 +101,12 @@ let rec tokenize input =
     else if is_identifier word then
       IDENTIFIER word :: tokenize rest
     else if is_num word then
-      INT_CONST word :: tokenize rest
+      NUMBER word :: tokenize rest
     else 
       ERROR_1 word :: tokenize rest
   (* | c :: cs when is_digit c ->
     let (number, rest) = helper2 (Char.escaped c) cs in
-    INT_CONST number :: tokenize rest *)
+    NUMBER number :: tokenize rest *)
   | '+' :: cs -> ARITH_OP "+" :: tokenize cs
   | '-' :: cs -> ARITH_OP "-" :: tokenize cs
   | '*' :: cs -> ARITH_OP "*" :: tokenize cs
@@ -123,7 +128,7 @@ let rec tokenize input =
       | [] -> ("error",[])
     in
     let (str, rest) = consume_string "" cs in
-    STRING_CONST str :: tokenize rest
+    STRING str :: tokenize rest
   | ' ' :: cs | '\n' :: cs | '\t' :: cs -> tokenize cs
   | x :: cs -> ERROR x :: tokenize cs
 
@@ -145,9 +150,9 @@ let print_token = function
       | "^" -> Printf.printf "'%s': arithmetic operator (POW) \n" op
       | r -> Printf.printf "'%s': Error- Invalid Token! \n" r
     end
-  | INT_CONST n -> Printf.printf "'%s': constant \n" n
+  | NUMBER n -> Printf.printf "'%s': constant \n" n
   | COMPARISON_OP op -> Printf.printf "'%s': comparison operator \n" op
-  | STRING_CONST s -> 
+  | STRING s -> 
     begin
       match s with 
       | "error" -> Printf.printf "Error- Unterminated String! \n" 
@@ -184,6 +189,8 @@ let rec main counter =
   end
 
 let () = main 20;;
+
+
 (* EXHAUSTIVE TEST CASES  *)
 
 (* 
@@ -428,7 +435,213 @@ COMMAS AND PARENTHESIS
 
 GENERAL EXPRESSIONS :
 
+1. Enter the expression you want to tokenize : let x2 = "hello" = "world" && false
+'let': keyword 
+'x2': identifier 
+'=': comparison operator 
+'hello': string constant 
+'=': comparison operator 
+'world': string constant 
+'&&': boolean operation 
+'false': boolean 
 
+2. Enter the expression you want to tokenize : f(x) + g(y) - h(z)
+'f': identifier 
+'(': parenthesis 
+'x': identifier 
+')': parenthesis 
+'+': arithmetic operator (PLUS) 
+'g': identifier 
+'(': parenthesis 
+'y': identifier 
+')': parenthesis 
+'-': arithmetic operator (SUB) 
+'h': identifier 
+'(': parenthesis 
+'z': identifier 
+')': parenthesis 
+
+3. Enter the expression you want to tokenize : (a && b) || (c || d)
+'(': parenthesis 
+'a': identifier 
+'&&': boolean operation 
+'b': identifier 
+')': parenthesis 
+'||': boolean operation 
+'(': parenthesis 
+'c': identifier 
+'||': boolean operation 
+'d': identifier 
+')': parenthesis 
+
+4. Enter the expression you want to tokenize : (x + (y * z) - (w / v))
+'(': parenthesis 
+'x': identifier 
+'+': arithmetic operator (PLUS) 
+'(': parenthesis 
+'y': identifier 
+'*': arithmetic operator (MUL) 
+'z': identifier 
+')': parenthesis 
+'-': arithmetic operator (SUB) 
+'(': parenthesis 
+'w': identifier 
+'/': arithmetic operator (DIV) 
+'v': identifier 
+')': parenthesis 
+')': parenthesis 
+
+5. Enter the expression you want to tokenize : x = (y || "string")
+'x': identifier 
+'=': comparison operator 
+'(': parenthesis 
+'y': identifier 
+'||': boolean operation 
+'string': string constant 
+')': parenthesis 
+
+6. Enter the expression you want to tokenize : x + 42 * (y - 3) = (true || false) && pair
+'x': identifier 
+'+': arithmetic operator (PLUS) 
+'42': constant 
+'*': arithmetic operator (MUL) 
+'(': parenthesis 
+'y': identifier 
+'-': arithmetic operator (SUB) 
+'3': constant 
+')': parenthesis 
+'=': comparison operator 
+'(': parenthesis 
+'true': boolean 
+'||': boolean operation 
+'false': boolean 
+')': parenthesis 
+'&&': boolean operation 
+'pair': keyword 
+
+7. Enter the expression you want to tokenize : if x1 + 42 * (y2 - 3) = true then "result" else x1
+'if': keyword 
+'x1': identifier 
+'+': arithmetic operator (PLUS) 
+'42': constant 
+'*': arithmetic operator (MUL) 
+'(': parenthesis 
+'y2': identifier 
+'-': arithmetic operator (SUB) 
+'3': constant 
+')': parenthesis 
+'=': comparison operator 
+'true': boolean 
+'then': keyword 
+'result': string constant 
+'else': keyword 
+'x1': identifier 
+
+8. Enter the expression you want to tokenize : pair(fst(x), snd(y)) && !false || true
+'pair': keyword 
+'(': parenthesis 
+'fst': keyword 
+'(': parenthesis 
+'x': identifier 
+')': parenthesis 
+',': comma 
+'snd': keyword 
+'(': parenthesis 
+'y': identifier 
+')': parenthesis 
+')': parenthesis 
+'&&': boolean operation 
+'!': boolean operation 
+'false': boolean 
+'||': boolean operation 
+'true': boolean 
+
+9. Enter the expression you want to tokenize : x` + y_2 - 10 >= 20
+'x`': identifier 
+'+': arithmetic operator (PLUS) 
+'y_2': identifier 
+'-': arithmetic operator (SUB) 
+'10': constant 
+'>=': comparison operator 
+'20': constant 
+
+10. Enter the expression you want to tokenize : 0
+'0': constant 
+
+11. Enter the expression you want to tokenize : if x1 + 49842 * (y2`__ - 3) = true then "result" else x1, let x2 = "hello" = "world"  && false 
+'if': keyword 
+'x1': identifier 
+'+': arithmetic operator (PLUS) 
+'49842': constant 
+'*': arithmetic operator (MUL) 
+'(': parenthesis 
+'y2`__': identifier 
+'-': arithmetic operator (SUB) 
+'3': constant 
+')': parenthesis 
+'=': comparison operator 
+'true': boolean 
+'then': keyword 
+'result': string constant 
+'else': keyword 
+'x1': identifier 
+',': comma 
+'let': keyword 
+'x2': identifier 
+'=': comparison operator 
+'hello': string constant 
+'=': comparison operator 
+'world': string constant 
+'&&': boolean operation 
+'false': boolean 
+
+12. Enter the expression you want to tokenize : x1 + 42 * (y`2`_ - 3 ) = (true && false) || pair
+'x1': identifier 
+'+': arithmetic operator (PLUS) 
+'42': constant 
+'*': arithmetic operator (MUL) 
+'(': parenthesis 
+'y`2`_': identifier 
+'-': arithmetic operator (SUB) 
+'3': constant 
+')': parenthesis 
+'=': comparison operator 
+'(': parenthesis 
+'true': boolean 
+'&&': boolean operation 
+'false': boolean 
+')': parenthesis 
+'||': boolean operation 
+'pair': keyword 
+
+13. Enter the expression you want to tokenize : "He says ""Hello"" to Him" + 123
+'He says ': string constant 
+'Hello': string constant 
+' to Him': string constant 
+'+': arithmetic operator (PLUS) 
+'123': constant 
+
+14. Enter the expression you want to tokenize : let answer = always 42
+'let': keyword 
+'answer': identifier 
+'=': comparison operator 
+'always': identifier 
+'42': constant 
+
+15. Enter the expression you want to tokenize : hardwork = 100 , if TA = good , please marks = "100/100"                    
+'hardwork': identifier 
+'=': comparison operator 
+'100': constant 
+',': comma 
+'if': keyword 
+'TA': Error- Invalid Token! 
+'=': comparison operator 
+'good': identifier 
+',': comma 
+'please': identifier 
+'marks': identifier 
+'=': comparison operator 
+'100/100': string constant 
 
 
 *)
