@@ -13,6 +13,26 @@ let is_letter c = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
 
 let is_digit c = c >= '0' && c <= '9'
 
+let starts_with_char_or_underscore s =
+  match String.length s with
+  | 0 -> false
+  | _ -> 
+    let first_char = String.get s 0 in
+    first_char = '_' || (first_char >= 'a' && first_char <= 'z')
+
+
+let is_valid_identifier s =
+  let rec is_valid_char = function
+    | c when (c >= 'a' && c <= 'z') || (c>='A' && c<= 'Z') || (c >= '0' && c <= '9') || c = '\'' || c = '_' -> true
+    | _ -> false
+  in
+  let rec check_chars = function
+    | [] -> true
+    | c :: cs -> is_valid_char c && check_chars cs
+  in
+  starts_with_char_or_underscore s && check_chars (List.of_seq (String.to_seq s))
+
+
 (* correct this , traverse the string and find out if it is correct identifier or no. *)
 
 let rec is_valid_identifier_char = function
@@ -80,10 +100,13 @@ let print_token = function
   | COMPARISON_OP op -> Printf.printf "'%s': comparison operator " op
   | STRING_CONST s -> Printf.printf "'%s': string constant " s
   | PAREN c -> Printf.printf "'%c': parenthesis " c
-  | COMMA -> Printf.printf "',': comma "
+  | COMMA -> Printf.printf "',': comma ";;
 
 (* Example usage *)
-let input = " x*f = max ( 4 , 6 ) "
+(* let input = " x*f = max ( 4 , 6 ) "
 let tokens = tokenize_input input
-let () = List.iter print_token tokens;;
+let () = List.iter print_token tokens;; *)
+
+let a = is_valid_identifier "_alid_Stri'ng" (* true *);;
+Printf.printf "My boolean value is: %b\n" a;;
 print_newline();;
