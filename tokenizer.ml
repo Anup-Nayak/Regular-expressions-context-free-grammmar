@@ -7,7 +7,8 @@ type token =
   | COMPARISON_OP of string
   | STRING_CONST of string
   | PAREN of char
-  | COMMA ;;
+  | ERROR of string
+  | COMMA 
 
 let is_letter c = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c = '\'';;
 
@@ -39,34 +40,36 @@ let is_keyword = function
 | "if" | "else" | "then" | "pair" | "fst" | "snd" | "and" | "or" -> true
 | _ -> false ;;
 
-(* correct this , traverse the string and find out if it is correct identifier or no. *)
-
 let rec is_valid_identifier_char = function
-  | c when is_letter c || is_digit c || c = '\'' || c = '_' -> true
+  | c when is_letter c || is_digit c || c = '\'' || c = '\\'  || c = '_' -> true
   | _ -> false
 
-let rec tokenize input =
-  let rec consume_word acc = function
-    | c :: cs when is_valid_identifier_char c ->
-      consume_word (acc ^ Char.escaped c) cs
-    | cs -> ( acc, cs)
-  in
-  let rec consume_number acc = function
+
+let rec consume_word acc = function
+| c :: cs when is_valid_identifier_char c ->
+  consume_word (acc ^ Char.escaped c) cs
+| cs -> ( acc, cs)
+
+
+let rec consume_number acc = function
     | c :: cs when is_digit c -> consume_number (acc ^ Char.escaped c) cs
     | cs -> (int_of_string acc, cs)
-  in
+
+
+let rec tokenize input =
   match input with
   | [] -> []
   | c :: cs when is_letter c ->
     let (word, rest) = consume_word(Char.escaped c) cs in
-    if word = "true" || word = "false" then
+    if is_bool word then
       BOOLEAN (word = "true") :: tokenize rest
-    else if is_keyword word  then
+    else if is_keyword word then
       KEYWORD word :: tokenize rest
-    else if is_identifier word = true then
+    else if is_identifier word then
       IDENTIFIER word :: tokenize rest
-    else
-      failwith "my error"
+    else begin
+      ERROR word :: tokenize rest
+    end
   | c :: cs when is_digit c ->
     let (number, rest) = consume_number (Char.escaped c) cs in
     INT_CONST number :: tokenize rest
@@ -86,18 +89,15 @@ let rec tokenize input =
     let rec consume_string acc = function
       | '"' :: rest -> (acc, rest)
       | c :: rest -> consume_string (acc ^ Char.escaped c) rest
-      | [] -> failwith "Unterminated string literal"
+      | [] -> raise (Failure "Unterminated string literal")
     in
     let (str, rest) = consume_string "" cs in
     STRING_CONST str :: tokenize rest
   | ' ' :: cs | '\n' :: cs | '\t' :: cs -> tokenize cs
-  | _ -> failwith "Unexpected character"
+  | _ -> raise (Failure "Unexpected character")
 
 let tokenize_input input =
   tokenize (List.of_seq (String.to_seq input))
-
-
-(* correct this so that arithmetic operations dont show plus *)
 
 let print_token = function
   | IDENTIFIER s -> Printf.printf "'%s': identifier \n" s
@@ -116,15 +116,12 @@ let print_token = function
   | COMPARISON_OP op -> Printf.printf "'%s': comparison operator \n" op
   | STRING_CONST s -> Printf.printf "'%s': string constant \n" s
   | PAREN c -> Printf.printf "'%c': parenthesis \n" c
-  | COMMA -> Printf.printf "',': comma \n";;
+  | COMMA -> Printf.printf "',': comma \n"
+  | ERROR r -> Printf.printf "'%s': Error- Invalid Token! \n" r
 
 (* Example usage *)
-let input = "if x1 + 42 * (y2 - 3) = true then \"result\" else x1 pair"
+let input = "0123"
 let tokens = tokenize_input input
 let () = List.iter print_token tokens;;
-
-(* let a = is_identifier "_alid_Stri'ng";; *)
-(* Printf.printf "My boolean value is: %b\n" a;; *)
-
 
 print_newline();;
