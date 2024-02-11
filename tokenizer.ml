@@ -9,7 +9,7 @@ type token =
   | PAREN of char
   | COMMA ;;
 
-let is_letter c = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ;;
+let is_letter c = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c = '\'';;
 
 let is_digit c = c >= '0' && c <= '9' ;;
 
@@ -46,10 +46,10 @@ let rec is_valid_identifier_char = function
   | _ -> false
 
 let rec tokenize input =
-  let rec consume_identifier acc = function
+  let rec consume_word acc = function
     | c :: cs when is_valid_identifier_char c ->
-      consume_identifier (acc ^ Char.escaped c) cs
-    | cs -> (String.lowercase_ascii acc, cs)
+      consume_word (acc ^ Char.escaped c) cs
+    | cs -> ( acc, cs)
   in
   let rec consume_number acc = function
     | c :: cs when is_digit c -> consume_number (acc ^ Char.escaped c) cs
@@ -58,13 +58,15 @@ let rec tokenize input =
   match input with
   | [] -> []
   | c :: cs when is_letter c ->
-    let (identifier, rest) = consume_identifier (Char.escaped c) cs in
-    if identifier = "true" || identifier = "false" then
-      BOOLEAN (identifier = "true") :: tokenize rest
-    else if identifier = "if" || identifier = "then" || identifier = "else" || identifier = "pair" || identifier = "fst" || identifier = "snd" || identifier = "or" || identifier = "and" then
-      KEYWORD identifier :: tokenize rest
+    let (word, rest) = consume_word(Char.escaped c) cs in
+    if word = "true" || word = "false" then
+      BOOLEAN (word = "true") :: tokenize rest
+    else if is_keyword word  then
+      KEYWORD word :: tokenize rest
+    else if is_identifier word = true then
+      IDENTIFIER word :: tokenize rest
     else
-      IDENTIFIER identifier :: tokenize rest
+      failwith "my error"
   | c :: cs when is_digit c ->
     let (number, rest) = consume_number (Char.escaped c) cs in
     INT_CONST number :: tokenize rest
@@ -117,7 +119,7 @@ let print_token = function
   | COMMA -> Printf.printf "',': comma \n";;
 
 (* Example usage *)
-let input = "if x1 + 42 * (y2 - 3) = true then \"result\" else x1"
+let input = "if x1 + 42 * (y2 - 3) = true then \"result\" else x1 pair"
 let tokens = tokenize_input input
 let () = List.iter print_token tokens;;
 
