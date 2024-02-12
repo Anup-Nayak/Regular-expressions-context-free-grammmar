@@ -10,7 +10,14 @@ I have implemented this only in my current implementation,
 However i think the output should be 
 'AAA456' : Error- Inavlid Token!
 
-this was my previous implementation. *)
+this was my previous implementation.
+
+UPDATE 2 - in the current update this has been corrected and i have modified my code accordingly 
+
+UPDATE 3 - 8ba will give output 
+'8': integer 
+'ba': identifier -> as per current piazza.
+*)
 
 type token =
   | IDENTIFIER of string
@@ -27,9 +34,9 @@ type token =
   | ERROR of char
   | COMMA 
 
-let is_letter c = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c = '`' || c = '&' || c = '|' || c = '_' || c = '\'' || c ='.' ;;
+let is_letter c = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c = '`' || c = '&' || c = '|' || c = '_' || c = '\'' || c ='.' || (c >= '0' && c <= '9');;
 
-let is_start_letter c = (c >= 'a' && c <= 'z')  || c = '`' || c = '&' || c = '|' || c = '_' || c = '\'' || c ='.' ;;
+let is_start_letter c = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c = '`' || c = '&' || c = '|' || c = '_' || c = '\'' || c ='.' ;;
 
 let is_digit c = c >= '0' && c <= '9' ;;
 
@@ -104,7 +111,6 @@ let rec helper2 acc = function
     | c :: cs when is_digit c -> helper2 (acc ^ Char.escaped c) cs
     | ' ' :: cs -> (int_of_string acc, cs)
     | cs -> (int_of_string acc,cs)
-
 
 let rec tokenize input =
   match input with
@@ -256,12 +262,10 @@ INCORRECT IDENTIFIERS
 'or': boolean operation 
 
 2. Enter the expression you want to tokenize : Ayt
-'A' : Error- Invalid Token! 
-'yt': identifier  
+'Ayt': Error- Invalid Token! 
 
 3. Enter the expression you want to tokenize : Bli
-'B' : Error- Invalid Token! 
-'li': identifier
+'Bli': Error- Invalid Token! 
 
 4. Enter the expression you want to tokenize : ]ui
 ']' : Error- Invalid Token! 
