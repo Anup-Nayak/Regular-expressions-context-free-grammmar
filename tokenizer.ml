@@ -1,3 +1,17 @@
+(* Note according to piazza :
+input : AAA456 should give output 
+'A' : Error- Invalid Token! 
+'A' : Error- Invalid Token! 
+'A' : Error- Invalid Token! 
+'456': integer 
+
+I have implemented this only in my current implementation, 
+
+However i think the output should be 
+'AAA456' : Error- Inavlid Token!
+
+this was my previous implementation. *)
+
 type token =
   | IDENTIFIER of string
   | KEYWORD of string
@@ -14,6 +28,8 @@ type token =
   | COMMA 
 
 let is_letter c = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c = '`' || c = '&' || c = '|' || c = '_' || c = '\'' || c ='.' ;;
+
+let is_start_letter c = (c >= 'a' && c <= 'z')  || c = '`' || c = '&' || c = '|' || c = '_' || c = '\'' || c ='.' ;;
 
 let is_digit c = c >= '0' && c <= '9' ;;
 
@@ -93,7 +109,7 @@ let rec helper2 acc = function
 let rec tokenize input =
   match input with
   | [] -> []
-  | c :: cs when is_letter c ->
+  | c :: cs when is_start_letter c ->
     let (word, rest) = helper1(Char.escaped c) cs in
     if is_bool word then
       BOOLEAN (word = "true") :: tokenize rest
@@ -240,17 +256,19 @@ INCORRECT IDENTIFIERS
 'or': boolean operation 
 
 2. Enter the expression you want to tokenize : Ayt
-'Ayt': Error- Invalid Token! 
+'A' : Error- Invalid Token! 
+'yt': identifier  
 
 3. Enter the expression you want to tokenize : Bli
-'Bli': Error- Invalid Token! 
+'B' : Error- Invalid Token! 
+'li': identifier
 
 4. Enter the expression you want to tokenize : ]ui
- ']' : Error- Invalid Token! 
+']' : Error- Invalid Token! 
 'ui': identifier 
 
 5. Enter the expression you want to tokenize : @art
- '@' : Error- Invalid Token! 
+'@' : Error- Invalid Token! 
 'art': identifier 
 
 B. KEYWORDS
